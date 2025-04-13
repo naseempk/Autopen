@@ -1,29 +1,62 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Home, FileText, Settings, LogOut, PenTool, Sparkles } from "lucide-react";
+import axios from "axios";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("");
+  const [progress, setProgress] = useState({
+    streak: 0,
+    dailyGoal: 500,
+    wordsWrittenToday: 0,
+  });
 
   useEffect(() => {
     const storedName = localStorage.getItem("name");
     if (storedName) setUserName(storedName);
   }, []);
 
-  const [recentDocuments, setRecentDocuments] = useState([
-    { id: 1, title: "My First Story" },
-    { id: 2, title: "Thriller Draft" },
-  ]);
-
-  const openDocument = (id) => {
-    console.log(`Opening document ${id}`);
-  };
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("/api/user/writing-progress", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        const { writingStreak, dailyWordGoal, dailyWordCount } = response.data;
+  
+        setProgress({
+          streak: writingStreak || 0,
+          dailyGoal: dailyWordGoal || 500,
+          wordsWrittenToday: dailyWordCount || 0,
+        });
+      } catch (error) {
+        console.error("Error fetching progress data:", error);
+      }
+    };
+  
+    fetchProgress();
+  }, []);
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("name");
+    localStorage.removeItem("userId");
     navigate("/login");
+  };
+
+  const handleStartWriting = () => {
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+      alert("User not authenticated. Please log in to save drafts.");
+      navigate("/login");
+    } else {
+      navigate("/editor");
+    }
   };
 
   return (
@@ -34,7 +67,7 @@ export default function DashboardPage() {
           <SidebarLink to="/dashboard" icon={<Home />} text="Dashboard" />
           <SidebarLink to="/editor" icon={<PenTool />} text="New Project" />
           <SidebarLink to="/documents" icon={<FileText />} text="My Documents" />
-          <SidebarLink to="/ai-assist" icon={<Sparkles />} text="AI Assistance" />
+          <SidebarLink to="/feedback" icon={<Sparkles />} text="Feedback" />
           <SidebarLink to="/settings" icon={<Settings />} text="Settings" />
           <button
             onClick={handleLogout}
@@ -52,26 +85,50 @@ export default function DashboardPage() {
           <p className="text-gray-600 italic">"Creativity is intelligence having fun." — Albert Einstein</p>
           <button
             className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition"
-            onClick={() => navigate("/editor")} // ✅ Corrected path
+            onClick={handleStartWriting}
           >
             Start Writing
           </button>
         </section>
+        <section className="mt-6 space-y-6">
+          {/* Writing Streak & Progress Tracker */}
+          <div className="p-6 bg-white shadow-sm rounded-lg">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              🔥 <span>{progress.streak}-Day Writing Streak!</span>
+            </h2>
+            <div className="mt-4">
+              <p className="text-gray-700">
+                🎯 Daily Goal: <strong>{progress.dailyGoal} words</strong>
+              </p>
+              <div className="mt-2 bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-indigo-600 h-2.5 rounded-full"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      (progress.wordsWrittenToday / progress.dailyGoal) * 100
+                    )}%`,
+                  }}
+                ></div>
+              </div>
+              <p className="mt-2 text-gray-700">
+                📊 Progress: <strong>{progress.wordsWrittenToday}/{progress.dailyGoal} words</strong>
+              </p>
+              <p className="mt-2 text-gray-600 italic">
+                💬 "You're on fire! Keep going!"
+              </p>
+            </div>
+          </div>
 
-        {/* Recent Documents */}
-        <section>
-          <h2 className="text-xl font-semibold mb-2">📂 Recent Documents</h2>
-          <ul>
-            {recentDocuments.map((doc) => (
-              <li
-                key={doc.id}
-                className="p-3 bg-white shadow-sm hover:bg-gray-200 cursor-pointer rounded mb-2 transition"
-                onClick={() => openDocument(doc.id)}
-              >
-                {doc.title}
-              </li>
-            ))}
-          </ul>
+          {/* AI Writing Tips & Inspiration */}
+          <div className="p-6 bg-white shadow-sm rounded-lg">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              💡 <span>Today's Writing Tip</span>
+            </h2>
+            <p className="mt-4 text-gray-700 italic">
+              "Start your story with a strong hook to grab the reader's attention. A compelling opening sets the tone for the entire piece."
+            </p>
+          </div>
         </section>
       </main>
 
