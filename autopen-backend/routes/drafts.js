@@ -7,7 +7,7 @@ const router = express.Router();
 // 📌 Get all drafts for the logged-in user
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const drafts = await Draft.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    const drafts = await Draft.find({ userId: req.user.userId }).sort({ createdAt: -1 });
     res.json(drafts);
   } catch (error) {
     res.status(500).json({ error: "Server error" });
@@ -18,7 +18,13 @@ router.get("/", authMiddleware, async (req, res) => {
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const draft = await Draft.findById(req.params.id);
-    if (!draft || draft.userId.toString() !== req.user.id) {
+
+    console.log("📥 Requested draft ID:", req.params.id);
+    console.log("🔐 Authenticated user ID:", req.user.userId);
+    console.log("📄 Found draft:", draft);
+
+
+    if (!draft || draft.userId.toString() !== req.user.userId) {
       return res.status(404).json({ error: "Draft not found" });
     }
     res.json(draft);
@@ -49,7 +55,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
     const { title, content } = req.body;
     const draft = await Draft.findById(req.params.id);
 
-    if (!draft || draft.userId.toString() !== req.user.id) {
+    if (!draft || draft.userId.toString() !== req.user.userId) {
       return res.status(404).json({ error: "Draft not found" });
     }
 
@@ -63,19 +69,6 @@ router.put("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// 📌 Delete a draft
-router.delete("/:id", authMiddleware, async (req, res) => {
-  try {
-    const draft = await Draft.findById(req.params.id);
-    if (!draft || draft.userId.toString() !== req.user.id) {
-      return res.status(404).json({ error: "Draft not found" });
-    }
 
-    await draft.deleteOne();
-    res.json({ message: "Draft deleted" });
-  } catch (error) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
 export default router;

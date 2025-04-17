@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
-import { useNavigate, Link } from "react-router-dom"; // Use Link for navigation
-import axios from "axios"; // Use axios for API calls
+import { useNavigate, Link } from "react-router-dom"; 
+import axios from "axios"; 
 
 
 const LoginPage = () => {

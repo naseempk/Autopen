@@ -34,11 +34,11 @@ const DocumentPage = () => {
   }, []);
 
   const handleViewDraft = (draftId) => {
-    navigate(`/editor/${draftId}`);
+    navigate(`/viewedit/${draftId}`);
   };
 
   const handleEditDraft = (draftId) => {
-    navigate(`/editor/${draftId}?edit=true`); // Open editor in edit mode
+    navigate(`/viewedit/${draftId}?edit=true`); 
   };
 
   const handleDeleteDraft = async (draftId) => {

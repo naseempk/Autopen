@@ -12,12 +12,12 @@ export const analyzeToneConsistency = async (text) => {
       { headers: { Authorization: `Bearer ${API_KEY}` } }
     );
 
-    console.log("API Response:", response.data); // Debugging API response
+    console.log("API Response:", response.data); 
 
     if (response.data && response.data[0]) {
       const sentimentScores = response.data[0];
 
-      // Extract highest confidence sentiment
+     
       const highestSentiment = sentimentScores.reduce((prev, current) =>
         prev.score > current.score ? prev : current
       );
@@ -56,7 +56,6 @@ export const checkToneConsistency = (sections) => {
         const prevSentiment = sentimentValues[sections[index - 1].sentiment];
         const currSentiment = sentimentValues[section.sentiment];
   
-        // Detect a drastic shift (change from Positive ↔ Negative)
         if (Math.abs(prevSentiment - currSentiment) > 1) {
           flaggedSections.push({
             index,
@@ -69,7 +68,7 @@ export const checkToneConsistency = (sections) => {
       }
     });
   
-    console.log("Flagged Sections:", flaggedSections); // Debugging flagged issues
+    console.log("Flagged Sections:", flaggedSections); 
   
     return flaggedSections;
   };

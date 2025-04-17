@@ -1,13 +1,13 @@
 import axios from "axios";
 
 const API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli";
-const API_KEY = "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"; // Replace with your actual API key
+const API_KEY = "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";
 
 const GENRE_LABELS = [
   "Fantasy", "Science Fiction", "Mystery", "Horror", 
   "Romance", "Thriller", "Historical Fiction", "Adventure", 
   "Comedy", "Drama"
-]; // Only 10 labels
+]; 
 
 export const analyzeGenre = async (text) => {
   try {
@@ -21,7 +21,7 @@ export const analyzeGenre = async (text) => {
     );
 
     if (response.data && response.data.labels) {
-      return response.data.labels[0]; // Return the most likely genre
+      return response.data.labels[0]; 
     } else {
       return "Unknown Genre";
     }

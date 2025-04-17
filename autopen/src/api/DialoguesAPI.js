@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API_URL = "https://api.together.xyz/v1/chat/completions";
-const API_KEY = "8e14ef55190350aa8840d63aa54957f30737255b3bc3df7ebc89f2594ec0de16"; // Replace with your actual Together AI API key
+const API_KEY = "8e14ef55190350aa8840d63aa54957f30737255b3bc3df7ebc89f2594ec0de16"; 
 
 export const generateDialogues = async (prompt) => {
   try {

@@ -45,7 +45,26 @@ router.get("/user-drafts/:userId", authMiddleware, async (req, res) => {
   }
 });
 
-// 🚀 Delete Draft by ID
+router.get("/:id", authMiddleware, async (req, res) => {
+  try {
+    const draft = await Draft.findById(req.params.id);
+
+    console.log("📥 Requested draft ID:", req.params.id);
+    console.log("🔐 Authenticated user ID:", req.user.userId);
+    console.log("📄 Found draft:", draft);
+
+
+    if (!draft || draft.userId.toString() !== req.user.userId) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
+    res.json(draft);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+//  Delete Draft by ID
 router.delete("/delete/:draftId", authMiddleware, async (req, res) => {
     try {
         const { draftId } = req.params;
@@ -59,7 +78,7 @@ router.delete("/delete/:draftId", authMiddleware, async (req, res) => {
         console.log("✅ Draft Owner ID:", draft.userId.toString()); 
         console.log("✅ User Attempting Delete:", req.user.userId);
 
-        // 🔴 Fix Potential ObjectId Comparison Issue
+        //  Fix Potential ObjectId Comparison Issue
         if (draft.userId.toString() !== req.user.userId) {
             console.error("❌ Unauthorized: User ID mismatch");
             return res.status(403).json({ error: "Unauthorized to delete this draft" });

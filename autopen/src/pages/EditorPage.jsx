@@ -28,6 +28,10 @@ export default function EditorPage() {
   const [dialogueSuggestions, setDialogueSuggestions] = useState([]);
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGenreLoading, setIsGenreLoading] = useState(false);
+
+
 
 
   useEffect(() => {
@@ -189,7 +193,7 @@ export default function EditorPage() {
             {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`, // ✅ Send token here
+                    "Authorization": `Bearer ${token}`, 
                 },
             }
         );
@@ -213,35 +217,45 @@ export default function EditorPage() {
       alert("Please enter text to analyze the genre.");
       return;
     }
-  
+    setIsGenreLoading(true);
     try {
       const detectedGenre = await analyzeGenre(content);
       setGenre(detectedGenre);
     } catch (error) {
       console.error("Error analyzing genre:", error);
       alert("Failed to analyze genre. Please try again.");
+    }finally{
+      setIsGenreLoading(false);
     }
   };
 
-  const handleGenerate = (type) => {
-    if (!prompt.trim()) return; // Prevent empty input
+  const handleGenerate = async (type) => {
+    if (!prompt.trim()) return;
   
-    switch (type) {
-      case "characters":
-        handleGenerateCharacters();
-        break;
-      case "dialogues":
-        handleGenerateDialogues();
-        break;
-      case "suggestions":
-        generateSuggestionsHandler();
-        break;
-      default:
-        console.error("Invalid type");
+    setIsLoading(true); // Start loading
+  
+    try {
+      switch (type) {
+        case "characters":
+          await handleGenerateCharacters();
+          break;
+        case "dialogues":
+          await handleGenerateDialogues();
+          break;
+        case "suggestions":
+          await generateSuggestionsHandler();
+          break;
+        default:
+          console.error("Invalid type");
+      }
+    } catch (err) {
+      console.error("Error during generation:", err);
+    } finally {
+      setIsLoading(false); // Stop loading
+      setShowPromptModal(false); // Close modal after action
     }
-  
-    setShowPromptModal(false); // Close the modal after action
   };
+  
   
   const generateSuggestionsHandler = async () => {
     if (!prompt.trim()) {
@@ -264,11 +278,11 @@ export default function EditorPage() {
     setLoading(true); // Show loading state
     try {
         const suggestions = await generateCharacters(prompt);
-        setCharacterSuggestions(suggestions); // Update state with suggestions
+        setCharacterSuggestions(suggestions); 
     } catch (error) {
         console.error("Error generating characters:", error);
     }
-    setLoading(false); // Hide loading state
+    setLoading(false); 
 };
 
 const handleGenerateDialogues = async () => {
@@ -396,10 +410,40 @@ const handleGenerateDialogues = async () => {
     />
     {renderPopup()}
     <button 
-    onClick={handleGenreCheck} 
-    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-    Detect Genre
-    </button>
+  onClick={handleGenreCheck}
+  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+  disabled={isGenreLoading}
+  aria-busy={isGenreLoading}
+  aria-live="polite"
+>
+  {isGenreLoading ? (
+    <>
+      <svg 
+        className="animate-spin h-5 w-5 text-white" 
+        viewBox="0 0 24 24" 
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+        />
+      </svg>
+      <span>Detecting...</span>
+    </>
+  ) : (
+    <span>Detect Genre</span>
+  )}
+</button>
 
     
     {genre && (
@@ -475,6 +519,17 @@ const handleGenerateDialogues = async () => {
         </button>
       </div>
 
+      {isLoading && (
+      <div className="flex items-center space-x-2 mb-4 text-black">
+    <svg className="animate-spin h-5 w-5 text-black" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16 8 8 0 01-8-8z" />
+    </svg>
+    <span className="text-sm">Generating, please wait...</span>
+      </div>
+      )}
+
+
       {/* Prompt Input */}
       <textarea
         value={prompt}
@@ -502,6 +557,8 @@ const handleGenerateDialogues = async () => {
     </div>
   </div>
 )}
+
+
 
 
   
